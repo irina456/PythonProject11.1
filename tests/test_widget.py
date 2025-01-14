@@ -1,31 +1,45 @@
+from typing import Union
+
 import pytest
 
-from src.widget import get_date
-from src.widget import mask_account_card
+from src.widget import get_date, mask_account_card
 
 
-@pytest.mark.parametrize("input_string, expected", [
-    ("Visa Platinum 7000792289606361", "7000 79** **** 6361"),
-    ("Maestro 7000792289606361", "7000 79** **** 6361"),
-    ("Счет 73654108430135874305", "**4305"),
-])
-def test_mask_account_card(input_string: str, expected: str) -> None:
-    assert mask_account_card(input_string) == expected
+def test_mask_account_card_fixture(verification_card_name: str, card_number_verification: str) -> None:
+    assert mask_account_card(verification_card_name, card_number_verification) == "Maestro 1596 83** **** 5199"
 
 
-@pytest.mark.parametrize("date_string, expected", [
-    ("2024-03-11T02:26:18.671407", "11.03.2024"),
-    ("2023-12-31T23:59:59.999999", "31.12.2023"),
-])
-def test_get_date(date_string: str, expected: str) -> None:
-    assert get_date(date_string) == expected
+@pytest.mark.parametrize(
+    "name,number_card, check_hidden_card",
+    [
+        ("Счет", "64686473678894779589", "Счет **9589"),
+        ("Visa Classic", 6831982476737658, "Visa Classic 6831 98** **** 7658"),
+        ("MasterCard", "7158300734726758", "Mastercard 7158 30** **** 6758"),
+        ("Visa Platinum", 8990922113665229, "Visa Platinum 8990 92** **** 5229"),
+        ("Visa Gold", "5999414228426353", "Visa Gold 5999 41** **** 6353"),
+        ("Счет", "6468 6473 6788 9477 9589", "Счет **9589"),
+        ("Maestro", "1596 8378 6870 5199", "Maestro 1596 83** **** 5199"),
+        ("Maestro", "1596 8378 5199", "Maestro 15** **** 5199"),
+        ("", "", "Введите тип и номер карты, счета."),
+        (1596837868705199, "Maestro", "Введите сначала тип карты, а после номер"),
+    ],
+)
+def test_mask_account_card(name: str, number_card: Union[int, str], check_hidden_card: str) -> None:
+    assert mask_account_card(name, number_card) == check_hidden_card
 
 
-def test_mask_account_card_invalid() -> None:
-    with pytest.raises(ValueError):
-        mask_account_card("Invalid input")
+def test_get_date_fixture(get_date_verification: str) -> None:
+    assert get_date(get_date_verification)
 
 
-def test_get_date_invalid() -> None:
-    with pytest.raises(ValueError):
-        get_date("Invalid date")
+@pytest.mark.parametrize(
+    "date, check_date",
+    [
+        ("2023-03-11T02:26:18.671407", "11.03.2023"),
+        ("", "Введите дату."),
+        ([], "Введите дату."),
+        ("2023-03-11", "11.03.2023"),
+    ],
+)
+def test_get_date(date: str, check_date: str) -> None:
+    assert get_date(date) == check_date

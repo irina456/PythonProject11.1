@@ -1,30 +1,45 @@
-from datetime import datetime
+from typing import Union
 
-from src.masks import get_mask_account
-from src.masks import get_mask_card_number
+from src.alphabetical import alphabetical
+from src.masks import get_mask_account, get_mask_card_number  # импорт функций
 
 
-def mask_account_card(input_string: str) -> str:
-    """
-    Маскирует номер карты или счета в зависимости от типа входной строки.
+def mask_account_card(name_card: str, number_card: Union[int, str]) -> str:
+    """Функция обрабатывает информацию о картах и о счетах"""
 
-    :param input_string: Строка, содержащая тип и номер карты или счета.
-    :return: Строка с замаскированным номером.
-    """
-    if "Счет" in input_string:
-        return get_mask_account(int(input_string.split()[-1]))
+    str_account_card = ""
+    if not name_card and not number_card:
+        str_account_card = "Введите тип и номер карты, счета."
     else:
-        return get_mask_card_number(int(input_string.split()[-1]))
+        for letter in str(name_card).lower():
+            if letter not in alphabetical:
+                return "Введите сначала тип карты, а после номер"
+            else:
+                if len(str(number_card)) < 20:
+
+                    number_card_mask = str(get_mask_card_number(number_card))  # шифрует номер счета
+
+                    # Формирование строки пользователю: наименование карты
+                    str_account_card = str(name_card.title()) + " " + str(number_card_mask)
+
+                else:
+
+                    number_count_mask = str(get_mask_account(number_card))  # шифрует номер счета
+
+                    # Формирование строки пользователю: наименование счета
+                    str_account_card = str(name_card.title()) + " " + str(number_count_mask)
+            return str_account_card
+    return str_account_card
 
 
-def get_date(date_string: str) -> str:
-    """
-    Преобразует строку с датой в формате "2024-03-11T02:26:18.671407"
-    в формат "ДД.ММ.ГГГГ".
+def get_date(date: str) -> str:
+    """Функция форматирует строку с датой в установленный образец (ДД.ММ.ГГГГ)"""
 
-    :param date_string: Строка с датой
-    в формате "2024-03-11T02:26:18.671407".
-    :return: Строка с датой в формате "ДД.ММ.ГГГГ".
-    """
-    date_object = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S.%f")
-    return date_object.strftime("%d.%m.%Y")
+    if date is None or not date:
+        return "Введите дату."
+    else:
+        format_date = date.split("T")
+
+        new_format_date = format_date[0].split("-")
+
+        return new_format_date[2] + "." + new_format_date[1] + "." + new_format_date[0]

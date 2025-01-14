@@ -1,49 +1,43 @@
-# tests/test_generators.py
+from typing import Any
 
 import pytest
-from src.generators.transactions import filter_by_currency, transaction_descriptions, card_number_generator
 
-@pytest.mark.parametrize("transactions, currency, expected", [
-    ([
-        {"id": 1, "state": "EXECUTED", "date": "2018-06-30T02:08:58.425572", "operationAmount": {"amount": "9824.07", "currency": {"name": "USD", "code": "USD"}}, "description": "Перевод организации", "from": "Счет 75106830613657916952", "to": "Счет 11776614605963066702"},
-        {"id": 2, "state": "EXECUTED", "date": "2019-04-04T23:20:05.206878", "operationAmount": {"amount": "79114.93", "currency": {"name": "USD", "code": "USD"}}, "description": "Перевод со счета на счет", "from": "Счет 19708645243227258542", "to": "Счет 75651667383060284188"}
-    ], "USD", [
-        {"id": 1, "state": "EXECUTED", "date": "2018-06-30T02:08:58.425572", "operationAmount": {"amount": "9824.07", "currency": {"name": "USD", "code": "USD"}}, "description": "Перевод организации", "from": "Счет 75106830613657916952", "to": "Счет 11776614605963066702"},
-        {"id": 2, "state": "EXECUTED", "date": "2019-04-04T23:20:05.206878", "operationAmount": {"amount": "79114.93", "currency": {"name": "USD", "code": "USD"}}, "description": "Перевод со счета на счет", "from": "Счет 19708645243227258542", "to": "Счет 75651667383060284188"}
-    ]),
-    ([
-        {"id": 3, "state": "EXECUTED", "date": "2018-06-30T02:08:58.425572", "operationAmount": {"amount": "9824.07", "currency": {"name": "RUB", "code": "RUB"}}, "description": "Перевод организации", "from": "Счет 75106830613657916952", "to": "Счет 11776614605963066702"},
-        {"id": 4, "state": "EXECUTED", "date": "2019-04-04T23:20:05.206878", "operationAmount": {"amount": "79114.93", "currency": {"name": "RUB", "code": "RUB"}}, "description": "Перевод со счета на счет", "from": "Счет 19708645243227258542", "to": "Счет 75651667383060284188"}
-    ], "RUB", [
-        {"id": 3, "state": "EXECUTED", "date": "2018-06-30T02:08:58.425572", "operationAmount": {"amount": "9824.07", "currency": {"name": "RUB", "code": "RUB"}}, "description": "Перевод организации", "from": "Счет 75106830613657916952", "to": "Счет 11776614605963066702"},
-        {"id": 4, "state": "EXECUTED", "date": "2019-04-04T23:20:05.206878", "operationAmount": {"amount": "79114.93", "currency": {"name": "RUB", "code": "RUB"}}, "description": "Перевод со счета на счет", "from": "Счет 19708645243227258542", "to": "Счет 75651667383060284188"}
-    ])
-])
+from src.generators import card_number_generator, filter_by_currency
+from tests.conftest import result_one, result_two
 
-def test_filter_by_currency(transactions, currency, expected):
-    result = list(filter_by_currency(transactions, currency))
-    assert result == expected
 
-@pytest.mark.parametrize("transactions, expected", [
-    ([
-        {"id": 1, "state": "EXECUTED", "date": "2018-06-30T02:08:58.425572", "operationAmount": {"amount": "9824.07", "currency": {"name": "USD", "code": "USD"}}, "description": "Перевод организации", "from": "Счет 75106830613657916952", "to": "Счет 11776614605963066702"},
-        {"id": 2, "state": "EXECUTED", "date": "2019-04-04T23:20:05.206878", "operationAmount": {"amount": "79114.93", "currency": {"name": "USD", "code": "USD"}}, "description": "Перевод со счета на счет", "from": "Счет 19708645243227258542", "to": "Счет 75651667383060284188"}
-    ], ["Перевод организации", "Перевод со счета на счет"]),
-    ([
-        {"id": 3, "state": "EXECUTED", "date": "2018-06-30T02:08:58.425572", "operationAmount": {"amount": "9824.07", "currency": {"name": "RUB", "code": "RUB"}}, "description": "Перевод организации", "from": "Счет 75106830613657916952", "to": "Счет 11776614605963066702"},
-        {"id": 4, "state": "EXECUTED", "date": "2019-04-04T23:20:05.206878", "operationAmount": {"amount": "79114.93", "currency": {"name": "RUB", "code": "RUB"}}, "description": "Перевод со счета на счет", "from": "Счет 19708645243227258542", "to": "Счет 75651667383060284188"}
-    ], ["Перевод организации", "Перевод со счета на счет"])
-])
+def test_filter_by_currency_fixture(filter_by_currency_verification: list) -> None:
+    assert next(filter_by_currency(filter_by_currency_verification, "USD")) == result_one
+    assert next(filter_by_currency(filter_by_currency_verification, "RUB")) == result_two
 
-def test_transaction_descriptions(transactions, expected):
-    result = list(transaction_descriptions(transactions))
-    assert result == expected
 
-@pytest.mark.parametrize("start, end, expected", [
-    (1, 5, ["0000000000000001", "0000000000000002", "0000000000000003", "0000000000000004", "0000000000000005"]),
-    (3, 7, ["0000000000000003", "0000000000000004", "0000000000000005", "0000000000000006", "0000000000000007"])
-])
+def test_transaction_descriptions_fixture(transaction_descriptions_verification: Any) -> None:
+    assert next(transaction_descriptions_verification) == "Перевод организации"
+    assert next(transaction_descriptions_verification) == "Перевод со счета на счет"
+    assert next(transaction_descriptions_verification) == "Перевод со счета на счет"
+    assert next(transaction_descriptions_verification) == "Перевод с карты на карту"
+    assert next(transaction_descriptions_verification) == "Перевод организации"
 
-def test_card_number_generator(start, end, expected):
-    result = list(card_number_generator(start, end,))
-    assert result == expected
+
+@pytest.mark.parametrize(
+    "start_number, stop_number, expected_value",
+    [
+        (
+            10,
+            15,
+            [
+                "0000 0000 0000 0010",
+                "0000 0000 0000 0011",
+                "0000 0000 0000 0012",
+                "0000 0000 0000 0013",
+                "0000 0000 0000 0014",
+            ],
+        ),
+        (21001, 21005, ["0000 0000 0002 1001", "0000 0000 0002 1002", "0000 0000 0002 1003", "0000 0000 0002 1004"]),
+        (1, "5", ["Ошибка: некорректный ввод"]),
+        ("r", 5, ["Ошибка: некорректный ввод"]),
+        ([], [], ["Ошибка: некорректный ввод"]),
+    ],
+)
+def test_card_number_generator(start_number: int, stop_number: int, expected_value: list[str]) -> None:
+    assert list(card_number_generator(start_number, stop_number)) == expected_value

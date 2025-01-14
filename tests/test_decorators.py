@@ -1,73 +1,70 @@
 import pytest
-from src.decorators.log import log
+from _pytest.capture import CaptureFixture
+
+from src import decorators
 
 
-@pytest.fixture
-def log_file(tmp_path):
-    return tmp_path / "test_log.txt"
+# тест ошибки выполнения функции и записи лога в файл
+def test_log_decorator_function_error() -> None:
+    @decorators.log(filename="mylog.txt")  # Вызов декоратора
+    def func(a: int, b: int) -> float:
+        """Простая функция для проверки деления где в знаменателе получается ноль"""
 
-@pytest.mark.parametrize("x, y, expected", [
-    (1, 2, 3),
-    (5, 7, 12),
-    (-1, -2, -3),
-    (0, 0, 0)
-])
-def test_log_to_file(log_file, x, y, expected):
-    @log(filename=str(log_file))
-    def my_function(x, y):
-        return x + y
+        return a / (a * b)
 
-    result = my_function(x, y)
-    assert result == expected
-    with open(log_file, "r") as f:
-        content = f.read().strip()
-        assert content == "my_function ok"
+    with pytest.raises(Exception):  # Проверка на срабатывание исключения
+        func(1, 0)
+    file = open("mylog.txt", "r")  # Открывание файла mylog.txt для чтения
+    line = file.readlines()  # Построчное чтение файла
+    file.close()  # Закрытие файла
 
-@pytest.mark.parametrize("x, y, expected", [
-    (1, 2, 3),
-    (5, 7, 12),
-    (-1, -2, -3),
-    (0, 0, 0)
-])
-def test_log_to_console(capsys, x, y, expected):
-    @log()
-    def my_function(x, y):
-        return x + y
+    # Добавление текста ошибки если исключение сработало в mylog.txt
+    assert line[-1] == f"func error: division by zero, inputs: (1, 1), {"{}"}\n"
 
-    result = my_function(x, y)
-    assert result == expected
-    captured = capsys.readouterr()
-    assert 'my_function ok' in captured.out
 
-@pytest.mark.parametrize("x, y", [
-    (1, 2),
-    (5, 7),
-    (-1, -2),
-    (0, 0)
-])
-def test_log_error_to_file(log_file, x, y):
-    @log(filename=str(log_file))
-    def my_function(x, y):
-        raise ValueError("Test error")
+# тест успешного выполнения функции и записи лога в файл
+def test_log_decorator_file_effectively() -> None:
+    @decorators.log(filename="mylog.txt")
+    def func(a: int, b: int) -> float:
+        """Простая функция для проверки деления"""
 
-    with pytest.raises(ValueError):
-        my_function(x, y)
-    with open(log_file, "r") as f:
-        content = f.read().strip()
-        assert content == f"my_function error: ValueError. Inputs: ({x}, {y}), {{}}"
+        return 1 / (a ^ b)
 
-@pytest.mark.parametrize("x, y", [
-    (1, 2),
-    (5, 7),
-    (-1, -2),
-    (0, 0)
-])
-def test_log_error_to_console(capsys, x, y):
-    @log()
-    def my_function(x, y):
-        raise ValueError("Test error")
+    func(2, 0)
+    file = open("mylog.txt", "r")  # Открывание файла mylog.txt для чтения
+    line = file.readlines()  # Построчное чтение файла
+    file.close()  # Закрытие файла
 
-    with pytest.raises(ValueError):
-        my_function(x, y)
-    captured = capsys.readouterr()
-    assert f"my_function error: ValueError. Inputs: ({x}, {y}), {{}}" in captured.err
+    # Добавление текста успешного выполнения в mylog.txt
+    assert line[-1] == "func ok\n"
+
+
+# тест ошибки выполнения функции и вывода лога в консоль
+def test_log_decorator_console_error(capsys: CaptureFixture[str]) -> None:
+    @decorators.log()
+    def func(a: int, b: int) -> float:
+        """Простая функция для проверки деления где в знаменателе получается ноль"""
+
+        return 1 / (a - b * a)
+
+    with pytest.raises(Exception):
+        func(1, 1)
+    captured = capsys.readouterr()  # Возвращение кортежа
+
+    # Вывод текста ошибки в консоль
+    assert captured.out == f"func error: division by zero, inputs: (1, 1), {"{}"}\n\n"
+
+
+# тест успешного выполнения функции и вывода лога в консоль
+def test_log_decorator_console_effectively(capsys: CaptureFixture[str]) -> None:
+    @decorators.log()
+    def func(a: int, b: int) -> float:
+        """Простая функция для проверки деления"""
+
+        return 1 / (a ^ b)
+
+    func(2, 0)
+    captured = capsys.readouterr()  # Возвращение кортежа
+
+    # Вывод текста успешного выполнения в консоль
+    assert captured.out == "func ok\n\n"
