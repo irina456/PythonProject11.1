@@ -29,3 +29,4 @@ def card_number_generator(start: int, stop: int) -> Generator:
             yield f"{number_card[:4]} {number_card[4:8]} {number_card[8:12]} {number_card[12:17]}"
     else:  # Если значения старт и стоп не число
         yield "Ошибка: некорректный ввод"
+
