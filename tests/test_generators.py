@@ -41,3 +41,4 @@ def test_transaction_descriptions_fixture(transaction_descriptions_verification:
 )
 def test_card_number_generator(start_number: int, stop_number: int, expected_value: list[str]) -> None:
     assert list(card_number_generator(start_number, stop_number)) == expected_value
+
