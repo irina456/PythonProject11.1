@@ -1,29 +1,35 @@
-def get_mask_card_number(card_number: int) -> str:
+def get_mask_card_number(card_number: str) -> str:
     """
-    Маскирует номер карты по правилу XXXX XX** **** XXXX.
-
-    :param card_number: Номер карты в виде числа.
-    :return: Маска номера карты.
+    Функция принимает на вход номер карты и возвращает ее маску
+    :param card_number:
+    :return:
     """
-    card_number_str = str(card_number)
-    if len(card_number_str) != 16:
-        raise ValueError("Номер карты должен содержать 16 цифр")
 
-    return (
-        f"{card_number_str[:4]} {card_number_str[4:6]}** **** "
-        f"{card_number_str[-4:]}"
-    )
+    number = str(card_number)
+    star = "*"
+    if 13 <= len(number) <= 19 and len(number) != 14 and len(number) != 17 and number.isdigit() is True:
+        mask_number = f"{number[:4]} {number[4:6]}** {star * (len(number) - 12)} {number[-4:]}"
+        return mask_number
+    if len(number) == 0:
+        return "пустой ввод"
+    else:
+        return "некорректный ввод данных"
 
 
-def get_mask_account(account_number: int) -> str:
+def get_mask_account(account_number: str) -> str:
     """
-    Маскирует номер счета по правилу **XXXX.
-
-    :param account_number: Номер счета в виде числа.
-    :return: Маска номера счета.
+    Функция принимает на вход номер счета и возвращает его маску
+    :param account_number:
+    :return:
     """
-    account_number_str = str(account_number)
-    if len(account_number_str) != 20:
-        raise ValueError("Номер счета должен содержать 20 цифр")
 
-    return f"**{account_number_str[-4:]}"
+    account = str(account_number)
+    if len(account) == 20 and account.isdigit() is True:
+        mask_account = f"**{account[16:]}"
+        return mask_account
+    if len(account) == 0:
+        return "пустой ввод"
+    if 20 > len(account) > 0 or len(account) > 20 or account.isdigit() is False:
+        return "некорректный ввод данных"
+
+    return ""

@@ -1,30 +1,63 @@
-from datetime import datetime
+import re
 
-from src.masks import get_mask_account
-from src.masks import get_mask_card_number
+from src.masks import get_mask_account, get_mask_card_number
 
 
-def mask_account_card(input_string: str) -> str:
+def mask_account_card(card_or_account_number: str) -> str:
     """
-    Маскирует номер карты или счета в зависимости от типа входной строки.
-
-    :param input_string: Строка, содержащая тип и номер карты или счета.
-    :return: Строка с замаскированным номером.
+    Функция обрабатывает полученные данные о карте/счете и возвращает замаскированный номер
+    :param card_or_account_number:
+    :return:
     """
-    if "Счет" in input_string:
-        return get_mask_account(int(input_string.split()[-1]))
+
+    if type(card_or_account_number) is str:
+
+        if len(card_or_account_number) > 0:
+            n_f_m = ""
+            name_mask = ""
+            for i in card_or_account_number:
+                if i.isdigit() is True:
+                    n_f_m += i
+                else:
+                    name_mask += i
+
+            if n_f_m != "" and name_mask != "":
+
+                if len(n_f_m) == 20 and re.findall(r"\b[Сс]ч[е|ё]т\b\s", name_mask) is not None:
+                    result = get_mask_account(n_f_m)
+                    total_result = name_mask + result
+                    return total_result
+
+                elif 13 <= len(n_f_m) <= 19 and len(n_f_m) != 14 and len(n_f_m) != 17 and n_f_m.isdigit() is True:
+                    result = get_mask_card_number(n_f_m)
+                    total_result = name_mask + result
+                    return total_result
+
+                return "некорректный ввод данных"
+
+            return "некорректный ввод данных"
+
+        return "пустой ввод"
     else:
-        return get_mask_card_number(int(input_string.split()[-1]))
+        raise TypeError("получен аргумент некорректного типа")
+
+    # except TypeError as e:
+    #   return f"TypeError: {e}"
 
 
-def get_date(date_string: str) -> str:
+def get_data(formatted_date: str | None) -> str | None:
     """
-    Преобразует строку с датой в формате "2024-03-11T02:26:18.671407"
-    в формат "ДД.ММ.ГГГГ".
-
-    :param date_string: Строка с датой
-    в формате "2024-03-11T02:26:18.671407".
-    :return: Строка с датой в формате "ДД.ММ.ГГГГ".
+    Функция преобразует полученную строку с датой в дату формата 'ДД.ММ.ГГГГ'
+    :param formatted_date:
+    :return:
     """
-    date_object = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S.%f")
-    return date_object.strftime("%d.%m.%Y")
+    if formatted_date:
+        received_date = re.search(r".*(\d{4}).(\d{2}).(\d{2}).*", formatted_date)
+
+        if received_date is not None:
+            result = f"{received_date.group(3)}.{received_date.group(2)}.{received_date.group(1)}"
+        else:
+            result = ""
+        return result
+
+    return "пустой ввод"
