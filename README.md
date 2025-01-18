@@ -35,16 +35,8 @@ for description in transaction_descriptions(transactions):
 # Пример использования card_number_generator
 for card_number in card_number_generator(0, 5):
     print(card_number)
-
+    
 # Project
-
 Этот проект демонстрирует использование декоратора `log`, который обеспечивает ведение журнала выполнения функций в Python. Декоратор записывает результаты выполнения и информацию об ошибках в указанный файл журнала или выводит их на консоль.
 
-## Структура проекта
 
-├── decorators/
-│ ├── init.py
-│ └── log_decorator.py # Реализация декоратора
-├── tests/
-│ └── test_decorators.py # Тесты для декоратора
-└── main.py # (опционально) Файл для запуска вашего кода
