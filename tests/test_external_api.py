@@ -5,7 +5,8 @@ import pytest
 import requests.exceptions
 from requests.exceptions import Timeout
 
-from src.external_api import apilayer_key, get_conversion_apilayer, get_random_number
+from src.external_api import (apilayer_key, get_conversion_apilayer,
+                              get_random_number)
 
 
 def test_get_random_number():

@@ -1,3 +1,20 @@
+import logging
+
+root_logger = logging.getLogger()
+mask_card_logger = logging.getLogger("app.mask_card")
+mask_account_logger = logging.getLogger("app.mask_account")
+main_logger = logging.getLogger("app.main")
+file_handler = logging.FileHandler("./logs/masks.log", "w", encoding="utf-8")
+file_formatter = logging.Formatter("%(asctime)s - %(filename)s - %(funcName)s - %(levelname)s - %(message)s")
+file_handler.setFormatter(file_formatter)
+mask_card_logger.addHandler(file_handler)
+mask_account_logger.addHandler(file_handler)
+main_logger.addHandler(file_handler)
+mask_card_logger.setLevel(logging.DEBUG)
+mask_account_logger.setLevel(logging.DEBUG)
+main_logger.setLevel(logging.DEBUG)
+
+
 def get_mask_card_number(card_number: str) -> str:
     """
     Функция принимает на вход номер карты и возвращает ее маску

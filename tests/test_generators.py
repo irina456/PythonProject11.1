@@ -2,7 +2,8 @@ from typing import Any, Iterator
 
 import pytest
 
-from src.generators import card_number_generator, filter_by_currency, transactions_descriptions
+from src.generators import (card_number_generator, filter_by_currency,
+                            transactions_descriptions)
 
 
 def test_filter_by_currency_(list_dicts_with_transactions: list[dict[str, Any]], currency_filter_1: str) -> None:
