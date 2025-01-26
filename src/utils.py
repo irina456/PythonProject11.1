@@ -13,7 +13,9 @@ main_utils_logger.addHandler(file_handler)
 utils_logger.setLevel(logging.DEBUG)
 main_utils_logger.setLevel(logging.DEBUG)
 
+
 def get_read_file(path_to_file: str) -> str | list[dict] | Any:
+
     """
     Принимает на вход путь до JSON-файла и возвращает список словарей
     с данными о финансовых транзакциях
@@ -34,5 +36,3 @@ def get_read_file(path_to_file: str) -> str | list[dict] | Any:
         return []
 
     return operations_data
-
-
