@@ -1,31 +1,47 @@
-from datetime import datetime
-from typing import Dict
-from typing import List
-from typing import Optional
+import re
+from typing import Any
 
 
-def filter_by_state(operations: List[Dict[str, str]],
-                    state: Optional[str] = "EXECUTED") -> List[Dict[str, str]]:
+def filter_by_state(list_dictionaries: list[dict[str, Any]], state: str = "EXECUTED") -> Any:
     """
-    Фильтрует список словарей по значению ключа 'state'.
-
-    :param operations: Список словарей с операциями.
-    :param state: Значение для ключа 'state' (по умолчанию 'EXECUTED').
-    :return: Новый список словарей, содержащий только те словари,
-     у которых ключ 'state' соответствует указанному значению.
+    Фильтрует список словарей с данными о банковских операциях по параметру 'state'
+    :param list_dictionaries:
+    :param state:
+    :return:
     """
-    return [operation for operation in operations
-            if operation.get("state") == state]
+
+    new_list_dictionaries = []
+    for dictionary in list_dictionaries:
+        for value in dictionary.values():
+            if value == state:
+                new_list_dictionaries.append(dictionary)
+    if new_list_dictionaries:
+        return new_list_dictionaries
+    return "нет данных"
 
 
-def sort_by_date(operations: List[Dict[str, str]],
-                 reverse: bool = True) -> List[Dict[str, str]]:
+def sort_by_date(list_dictionaries: list[dict[str, Any]], sort_order: bool = True) -> Any:
     """
-    Сортирует список словарей по дате.
-
-    :param operations: Список словарей с операциями.
-    :param reverse: Порядок сортировки (по умолчанию — убывание).
-    :return: Новый список, отсортированный по дате.
+    Сортирует полученный список словарей по дате, параметр, задающий порядок сортировки,
+    по умолчанию - убывание
+    :param list_dictionaries:
+    :param sort_order:
+    :return:
     """
-    return sorted(operations, key=lambda x: datetime.fromisoformat(x["date"]),
-                  reverse=reverse)
+
+    comparsion_dictionary = []
+    for dictionary in list_dictionaries:
+        if re.search(r"\d{4}-\d{2}-\d{2}.*", dictionary["date"]):
+            comparsion_dictionary.append(dictionary)
+        else:
+            continue
+    if comparsion_dictionary != list_dictionaries:
+        return "неверный формат даты"
+
+    else:
+        if sort_order is True:
+            sorted_dictionaries = sorted(list_dictionaries, key=lambda dictionary: dictionary["date"], reverse=True)
+        else:
+            sorted_dictionaries = sorted(list_dictionaries, key=lambda dictionary: dictionary["date"])
+
+        return sorted_dictionaries
