@@ -1,29 +1,55 @@
-def get_mask_card_number(card_number: int) -> str:
-    """
-    Маскирует номер карты по правилу XXXX XX** **** XXXX.
+import logging
 
-    :param card_number: Номер карты в виде числа.
-    :return: Маска номера карты.
-    """
-    card_number_str = str(card_number)
-    if len(card_number_str) != 16:
-        raise ValueError("Номер карты должен содержать 16 цифр")
-
-    return (
-        f"{card_number_str[:4]} {card_number_str[4:6]}** **** "
-        f"{card_number_str[-4:]}"
-    )
+logger_masks = logging.getLogger(__name__)
+file_handler = logging.FileHandler(f"log/{__name__}.log", mode="w")
+file_formatter = logging.Formatter(
+    "\n%(asctime)s %(levelname)s %(name)s %(funcName)s %(lineno)d: \n%(message)s", datefmt="%H:%M:%S %d-%m-%Y"
+)
+file_handler.setFormatter(file_formatter)
+logger_masks.addHandler(file_handler)
+logger_masks.setLevel(logging.INFO)
 
 
-def get_mask_account(account_number: int) -> str:
-    """
-    Маскирует номер счета по правилу **XXXX.
+# Functional part
+def get_mask_card_number(card_number: str = "", start: int = 0) -> str:
+    """принимает на вход номер карты, индекс первой цыфры номера карты и возвращает маску номера
+    по правилу User Name XXXX XX** **** XXXX"""
+    logger_masks.info("Get started get_mask_card_number")
+    out_format = card_number[:start]
+    split = start + 3
+    temp = range(start + 6, start + 12)
 
-    :param account_number: Номер счета в виде числа.
-    :return: Маска номера счета.
-    """
-    account_number_str = str(account_number)
-    if len(account_number_str) != 20:
-        raise ValueError("Номер счета должен содержать 20 цифр")
+    for i in range(len(card_number)):
+        if i >= start:
+            if i in temp:
+                out_format += "*"
+                if i != len(card_number) - 1:
+                    if i == split:
+                        out_format += " "
+                        split += 4
+            else:
+                out_format += card_number[i]
+                if i != len(card_number) - 1:
+                    if i == split:
+                        out_format += " "
+                        split += 4
 
-    return f"**{account_number_str[-4:]}"
+    if card_number == "":
+        logger_masks.warning(f'''Возвращаем пустую строку, на вход получили: "{card_number}"''')
+        return ""
+    else:
+        return out_format
+
+
+def get_mask_account(bank_account: str = "", start: int = 0) -> str:
+    """принимает на вход номер счета и возвращает маску номера по правилу Name **XXXX"""
+    logger_masks.info("Get started get_mask_account")
+    out_format = ""
+
+    out_format += bank_account[:start] + "**" + bank_account[-4:]
+
+    if bank_account == "":
+        logger_masks.warning(f'''Возвращаем пустую строку, на вход получили: "{bank_account}"''')
+        return ""
+    else:
+        return out_format
